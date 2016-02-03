@@ -4,7 +4,7 @@
 
     <groupId>nl.inergy.liquibase</groupId>
     <artifactId>liquibase-netezza</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>Liquibase Extension: Netezza Database Support</name>
     <description>Adds support for Netezza database</description>
@@ -30,7 +30,7 @@
         <connection>scm:git:git@github.com:inergynl/liquibase-netezza.git</connection>
         <url>scm:git:https://github.com/inergynl/liquibase-netezza.git</url>
         <developerConnection>scm:git:git@github.com:inergynl/liquibase-netezza.git</developerConnection>
-      <tag>liquibase-netezza-1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <developers>
