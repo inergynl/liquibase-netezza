@@ -3,6 +3,9 @@ package liquibase.ext.netezza.database;
 import liquibase.database.AbstractJdbcDatabase;
 import liquibase.database.DatabaseConnection;
 import liquibase.exception.DatabaseException;
+import liquibase.statement.SqlStatement;
+import liquibase.statement.core.RawCallStatement;
+import liquibase.structure.DatabaseObject;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -12,10 +15,6 @@ public class NetezzaDatabase extends AbstractJdbcDatabase {
 	public static final String PRODUCT_NAME = "Netezza NPS";
 	private Set<String> reservedWords = new HashSet<String>();
 	private Set<String> systemTablesAndViews = new HashSet<String>();
-
-	public String getShortName() {
-		return PRODUCT_NAME;
-	}
 
 	public NetezzaDatabase() {
 		super.setCurrentDateTimeFunction("CURRENT_TIMESTAMP");
@@ -41,8 +40,27 @@ public class NetezzaDatabase extends AbstractJdbcDatabase {
 		systemTablesAndViews.addAll(Arrays.asList("_v_procedure", "_v_relation_column", "_v_relation_column_def", "_v_sequence",
 				"_v_session", "_v_table", "_v_table_dist_map", "_v_table_index", "_v_user", "_v_usergroups", "_v_view",
 				"_v_sys_group_priv", "_v_sys_index", "_v_sys_priv", "_v_sys_table", "_v_sys_user_priv", "_v_sys_view"));
+
+		super.sequenceNextValueFunction = "%s.NEXTVAL";
+		super.sequenceCurrentValueFunction = "%s.CURRVAL";
+		super.unmodifiableDataTypes.addAll(Arrays.asList("boolean", "char", "varchar", "nchar", "nvarchar", "date", "timestamp",
+				"time", "interval", "time with time zone", "real", "double precision", "integer", "byteint", "smallint", "bigint",
+				"bool", "datetime", "time without time zone", "timespan", "timetz", "double", "float", "float8", "int", "int4",
+				"int1", "int2", "int8"));
+		super.unquotedObjectsAreUppercased=true;
 	}
 
+	@Override
+	public boolean supportsDDLInTransaction() {
+		return false;
+	}
+
+	@Override
+	public String getShortName() {
+		return PRODUCT_NAME;
+	}
+
+	@Override
 	public int getPriority() {
 		return PRIORITY_DEFAULT;
 	}
@@ -52,19 +70,33 @@ public class NetezzaDatabase extends AbstractJdbcDatabase {
 		return PRODUCT_NAME;
 	}
 
+	@Override
 	public Integer getDefaultPort() {
 		return 5480;
 	}
 
+	@Override
 	public boolean supportsInitiallyDeferrableColumns() {
 		return true;
 	}
 
+	@Override
 	public boolean isCorrectDatabaseImplementation(DatabaseConnection conn) throws DatabaseException {
 		String databaseProductName = conn.getDatabaseProductName();
 		return PRODUCT_NAME.equalsIgnoreCase(databaseProductName);
 	}
 
+	@Override
+	public boolean isReservedWord(String tableName) {
+		return reservedWords.contains(tableName.toUpperCase());
+	}
+
+	@Override
+	protected SqlStatement getConnectionSchemaNameCallStatement() {
+		return new RawCallStatement("select current_schema");
+	}
+
+	@Override
 	public String getDefaultDriver(String url) {
 		if (url.startsWith("jdbc:netezza:")) {
 			return "org.netezza.Driver";
@@ -72,6 +104,7 @@ public class NetezzaDatabase extends AbstractJdbcDatabase {
 		return null;
 	}
 
+	@Override
 	public boolean supportsTablespaces() {
 		return false;
 	}
@@ -107,12 +140,7 @@ public class NetezzaDatabase extends AbstractJdbcDatabase {
 	}
 
 	@Override
-	public boolean supportsSchemas() {
-		return false;
-	}
-
-	@Override
-	public String getDefaultSchemaName() {
-		return "ADMIN";
+	public boolean supportsCatalogInObjectName(final Class<? extends DatabaseObject> type) {
+		return true;
 	}
 }
