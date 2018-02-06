@@ -50,9 +50,13 @@ public class NetezzaDatabase extends AbstractJdbcDatabase {
 		super.unquotedObjectsAreUppercased=true;
 	}
 
+	/**
+	 * Although Netezza supports DDL in a transaction. It has it's limitations. For example ALTER TABLE [ADD | DROP] COLUMN operations cannot run in a transaction.
+	 * @return true
+	 */
 	@Override
 	public boolean supportsDDLInTransaction() {
-		return false;
+		return true;
 	}
 
 	@Override
